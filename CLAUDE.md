@@ -58,7 +58,7 @@ uv lock --refresh --upgrade-package madoqua --upgrade-package gerenuk --upgrade-
 
 uv, ruff (lint/format), ty (type check), tyf (code search), biston (clone detection), madoqua (commit hook), gerenuk (impacted tests), zorilla (test lint), pycoati (test audit), pytest (+xdist, randomly), poethepoet (task runner), hatchling (build)
 
-Runtime deps: replicate, httpx, pyyaml, python-dotenv, pillow.
+Runtime deps: replicate, httpx, pyyaml, python-dotenv.
 
 ## Development Workflow
 

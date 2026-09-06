@@ -24,7 +24,6 @@ dependencies = [
     "httpx",
     "pyyaml",
     "python-dotenv",
-    "pillow",
 ]
 
 [project.urls]
@@ -64,6 +63,8 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "DTZ", "T20", "PTH", "ERA", "PL", "TRY", "RUF", "S", "PERF", "FURB"]
+# TRY003: inline exception messages are the readable choice for a library this small.
+ignore = ["TRY003"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["PLR2004", "PLR0913", "S", "TRY003", "PLC0415", "E501", "B006", "B008"]
@@ -91,7 +92,7 @@ known_first_party = ["imgen"]
 
 [tool.deptry.per_rule_ignores]
 # Runtime deps declared up front; drop entries here as the code starts importing them.
-DEP002 = ["replicate", "httpx", "pyyaml", "python-dotenv", "pillow"]
+DEP002 = ["pyyaml", "python-dotenv"]
 
 [tool.poe]
 verbosity = -1
