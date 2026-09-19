@@ -51,7 +51,7 @@ dev = [
     "poethepoet",
     "ty-find",
     "biston",
-    "madoqua",
+    "madoqua>=0.2.4",
     "gerenuk",
     "zorilla",
     "pycoati",
