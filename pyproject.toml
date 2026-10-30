@@ -1,6 +1,6 @@
 [project]
 name = "imgen"
-version = "0.1.2"
+version = "0.1.3"
 description = "Small shared library for generating images through Replicate"
 readme = "README.md"
 requires-python = ">=3.11"
