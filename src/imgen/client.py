@@ -4,20 +4,57 @@ from __future__ import annotations
 
 import os
 import pathlib
+import time
 from collections.abc import Sequence
 from typing import Any
 
 import httpx
-import replicate
 from dotenv import find_dotenv, load_dotenv
 
 from imgen.errors import GenerationError
 from imgen.models import DEFAULT_MODEL, resolve_model
 
-_run = replicate.run  # indirection so tests can swap the network call
-
 TOKEN_VAR = "REPLICATE_API_TOKEN"  # noqa: S105 -- variable name, not a secret
 URL_TIMEOUT = 120
+API = "https://api.replicate.com/v1/"
+POLL_SECONDS = 2
+RUN_TIMEOUT = 600  # Seconds a prediction may take before we give up
+RUNNING = {"starting", "processing"}
+
+
+def _check(resp: httpx.Response) -> dict[str, Any]:
+    if resp.is_error:
+        raise GenerationError(f"Replicate answered {resp.status_code}: {resp.text}")
+    return resp.json()
+
+
+def _predict(model_id: str, *, input: dict[str, Any]) -> Any:
+    """Run one prediction through Replicate's HTTP API and return its output.
+
+    ``model_id`` is ``owner/name`` (an official model, its latest version) or
+    ``owner/name:version``. Replaces ``replicate.run``: replicate 1.0.7 rejects the
+    API's ``"version": null`` for official models.
+    """
+    name, _, version = model_id.partition(":")
+    if version:
+        url, body = f"{API}predictions", {"version": version, "input": input}
+    else:
+        url, body = f"{API}models/{name}/predictions", {"input": input}
+    headers = {"Authorization": f"Bearer {os.environ[TOKEN_VAR]}", "Prefer": "wait"}
+    deadline = time.monotonic() + RUN_TIMEOUT
+    with httpx.Client(headers=headers, timeout=URL_TIMEOUT) as http:
+        pred = _check(http.post(url, json=body))
+        while pred["status"] in RUNNING:
+            if time.monotonic() > deadline:
+                raise GenerationError(f"prediction {pred['id']} timed out")
+            time.sleep(POLL_SECONDS)
+            pred = _check(http.get(pred["urls"]["get"]))
+    if pred["status"] != "succeeded":
+        raise GenerationError(f"prediction {pred['status']}: {pred.get('error')}")
+    return pred["output"]
+
+
+_run = _predict  # indirection so tests can swap the network call
 
 
 def have_token() -> bool:

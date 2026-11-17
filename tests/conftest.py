@@ -21,7 +21,7 @@ class FakeFileOutput:
 
 @dataclass
 class FakeRun:
-    """Stand-in for replicate.run: records calls, returns a canned output."""
+    """Stand-in for _predict: records calls, returns a canned output."""
 
     output: Any = field(default_factory=FakeFileOutput)
     calls: list[tuple[str, dict[str, Any]]] = field(default_factory=list)
